@@ -21,9 +21,17 @@ export const getVentaByCodigo = async (req, res) => {
 };
 
 export const createVenta = async (req, res) => {
-  const { Codigo_producto, Nombre_cliente, Telefono_cliente, Fecha_venta, Cantidad_vendida, Total_venta } = req.body;
+  const { Codigo_producto, Nombre_cliente, Telefono_cliente, Fecha_venta, Cantidad_vendida } = req.body;
 
   try {
+    const [productRow] = await pool.query('SELECT preciop FROM productos WHERE codigop = ?', [Codigo_producto]);
+
+    if (productRow.length <= 0) {
+      return res.status(404).json({ message: 'Producto no encontrado' });
+    }
+
+    const Total_venta = productRow[0].preciop * Cantidad_vendida;
+
     const [rows] = await pool.query(
       'INSERT INTO ventas (Codigo_producto, Nombre_cliente, Telefono_cliente, Fecha_venta, Cantidad_vendida, Total_venta) VALUES (?, ?, ?, ?, ?, ?)',
       [Codigo_producto, Nombre_cliente, Telefono_cliente, Fecha_venta, Cantidad_vendida, Total_venta]
